@@ -131,7 +131,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 bg-gradient-to-r from-green-600 to-blue-100">
         {showMessage && (
           <div>
             <h1 className="text-2xl font-bold mb-4 py-8">Welcome!</h1>

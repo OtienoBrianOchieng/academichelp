@@ -12,7 +12,7 @@ const ConfirmEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-400 to-blue-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-600 to-blue-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Confirm Email</h2>
         <form onSubmit={handleSubmit} className="space-y-6">

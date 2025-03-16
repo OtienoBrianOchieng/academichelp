@@ -64,9 +64,6 @@ const CompletedOrders = () => {
                   <button className="text-green-600 hover:text-green-700 mr-4">
                     View
                   </button>
-                  <button className="text-blue-600 hover:text-blue-700">
-                    Reorder
-                  </button>
                 </td>
               </tr>
             ))}
