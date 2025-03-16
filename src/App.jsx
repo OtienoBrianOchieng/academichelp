@@ -16,6 +16,7 @@ import Revisions from './ClientDashboard/Revisions';
 import CompletedOrders from './ClientDashboard/CompletedOrders';
 import ActiveOrders from './ClientDashboard/ActiveOrders';
 import OrderDetails from './ClientDashboard/OrderDetails';
+import Messages from './ClientDashboard/Messages';
 
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
             <Route path="active-orders" element={<ActiveOrders />} />
             <Route path="revisions" element={<Revisions />} />
             <Route path="completed-orders" element={<CompletedOrders />} />
+            <Route path="messages" element = {<Messages />} />
           </Route>
                   {/* Order Details Route */}
         <Route path="/order/:orderId" element={<OrderDetails />} />

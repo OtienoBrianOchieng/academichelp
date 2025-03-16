@@ -4,14 +4,6 @@ import { useNavigate } from "react-router-dom";
 const Revisions = () => {
   // Sample data for revisions
   const revisions = [
-    {
-        id: "ORD12345",
-        subject: "Biology",
-        deadline: "2023-12-15 12:47",
-        status: "In Progress",
-        instructions: "Write a 1500-word essay on the impact of AI on society.",
-        attachments: ["document1.pdf", "image1.png"],
-      },
           {
           id: "ORD12348",
           subject: "History",

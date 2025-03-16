@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaUser, FaEnvelope, FaComment, FaPaperPlane } from "react-icons/fa"; // Icons for form fields
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -23,68 +24,85 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
-        <h2 className="text-3xl font-bold text-center mb-8">Contact Us</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-600 to-blue-200 py-12">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl transform transition-all hover:scale-105">
+        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Contact Us</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Name:</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600"
-              required
-            />
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name:</label>
+            <div className="relative">
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter your name"
+                required
+              />
+              <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
           </div>
 
           {/* Email Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600"
-              required
-            />
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email:</label>
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter your email"
+                required
+              />
+              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
           </div>
 
           {/* Subject Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Subject:</label>
-            <input
-              type="text"
-              name="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600"
-              required
-            />
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Subject:</label>
+            <div className="relative">
+              <input
+                type="text"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter the subject"
+                required
+              />
+              <FaComment className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
           </div>
 
           {/* Message Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Message:</label>
-            <textarea
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              rows="5"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600"
-              required
-            ></textarea>
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Message:</label>
+            <div className="relative">
+              <textarea
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                rows="5"
+                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Write your message here..."
+                required
+              ></textarea>
+              <FaComment className="absolute left-3 top-6 transform -translate-y-1/2 text-gray-400" />
+            </div>
           </div>
 
           {/* Submit Button */}
           <div>
             <button
               type="submit"
-              className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600"
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 flex items-center justify-center"
             >
+              <FaPaperPlane className="mr-2" />
               Send Message
             </button>
           </div>

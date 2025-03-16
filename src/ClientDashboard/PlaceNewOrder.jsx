@@ -47,6 +47,7 @@ const PlaceNewOrder = () => {
     attachments: [],
     numberOfPages: "", // Added for Number of Pages
     wordCount: "", // Added for Word Count
+    paperFormat: "", // Added for Paper Format
   });
 
   const handleChange = (e) => {
@@ -225,30 +226,54 @@ const PlaceNewOrder = () => {
             required
           />
         </div>
+
+        {/* Paper Format */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Paper Format:
+          </label>
+          <select
+            name="paperFormat"
+            value={formData.paperFormat}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+            required
+          >
+            <option value="" disabled>
+              Select Paper Format
+            </option>
+            <option value="APA">APA</option>
+            <option value="MLA">MLA</option>
+            <option value="Chicago">Chicago</option>
+            <option value="Harvard">Harvard</option>
+            <option value="Other">Other (Indicate in the instructions)</option>
+          </select>
+        </div>
+
         {/* Display selected file names with icons */}
         {formData.attachments.length > 0 && (
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Selected files:</p>
-              <ul className="space-y-2">
-                {formData.attachments.map((file, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center p-2 border border-gray-200 rounded-md shadow-sm hover:bg-gray-50"
+          <div className="mt-2">
+            <p className="text-sm text-gray-600">Selected files:</p>
+            <ul className="space-y-2">
+              {formData.attachments.map((file, index) => (
+                <li
+                  key={index}
+                  className="flex items-center p-2 border border-gray-200 rounded-md shadow-sm hover:bg-gray-50"
+                >
+                  {getFileIcon(file.name)}
+                  <span className="text-sm text-gray-700">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="ml-2 text-red-500"
                   >
-                    {getFileIcon(file.name)}
-                    <span className="text-sm text-gray-700">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
-                      className="ml-2 text-red-500"
-                    >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Attachments */}
         <div>
@@ -262,7 +287,6 @@ const PlaceNewOrder = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             multiple
           />
-          
         </div>
 
         {/* Submit Button */}
