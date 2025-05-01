@@ -1,38 +1,38 @@
-import React, { useState } from "react";
-import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFilePowerpoint, FaFileAlt } from "react-icons/fa"; // Importing relevant icons
+import React, { useState, useEffect } from "react";
+import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFilePowerpoint, FaFileAlt } from "react-icons/fa";
 
 const getFileIcon = (fileName) => {
   const extension = fileName.split('.').pop().toLowerCase();
 
   switch (extension) {
     case 'pdf':
-      return <FaFilePdf className="text-red-500 mr-2" />; // PDF icon
+      return <FaFilePdf className="text-red-500 mr-2" />;
     case 'docx':
     case 'doc':
-      return <FaFileWord className="text-blue-500 mr-2" />; // Word icon
+      return <FaFileWord className="text-blue-500 mr-2" />;
     case 'xlsx':
     case 'xls':
-      return <FaFileExcel className="text-green-500 mr-2" />; // Excel icon
+      return <FaFileExcel className="text-green-500 mr-2" />;
     case 'jpg':
     case 'jpeg':
     case 'png':
     case 'gif':
-      return <FaFileImage className="text-yellow-500 mr-2" />; // Image icon
+      return <FaFileImage className="text-yellow-500 mr-2" />;
     case 'pptx':
     case 'ppt':
-      return <FaFilePowerpoint className="text-orange-500 mr-2" />; // PowerPoint icon
+      return <FaFilePowerpoint className="text-orange-500 mr-2" />;
     case 'txt':
-      return <FaFileAlt className="text-gray-600 mr-2" />; // Text file icon
+      return <FaFileAlt className="text-gray-600 mr-2" />;
     case 'tex':
-      return <FaFileAlt className="text-green-600 mr-2" />; // LaTeX file icon (generic file icon)
+      return <FaFileAlt className="text-green-600 mr-2" />;
     case 'rtf':
-      return <FaFileAlt className="text-gray-500 mr-2" />; // Rich Text Format (RTF) icon
+      return <FaFileAlt className="text-gray-500 mr-2" />;
     case 'odt':
-      return <FaFileAlt className="text-blue-600 mr-2" />; // OpenDocument Text (ODT) icon
+      return <FaFileAlt className="text-blue-600 mr-2" />;
     case 'pages':
-      return <FaFileAlt className="text-purple-500 mr-2" />; // Apple Pages file icon
+      return <FaFileAlt className="text-purple-500 mr-2" />;
     default:
-      return <FaFileAlt className="text-gray-500 mr-2" />; // Default icon for unknown file types
+      return <FaFileAlt className="text-gray-500 mr-2" />;
   }
 };
 
@@ -45,19 +45,52 @@ const PlaceNewOrder = () => {
     instructions: "",
     academicLevel: "",
     attachments: [],
-    numberOfPages: "", // Added for Number of Pages
-    wordCount: "", // Added for Word Count
-    paperFormat: "", // Added for Paper Format
+    numberOfPages: "",
+    wordCount: "",
+    paperFormat: "",
+    isUrgent: false,
   });
 
+  const [price, setPrice] = useState(0);
+  const [baseRate, setBaseRate] = useState(9);
+  const [urgentSurcharge, setUrgentSurcharge] = useState(0);
+
+  useEffect(() => {
+    calculatePrice();
+  }, [formData.numberOfPages, formData.isUrgent, formData.academicLevel]);
+
+  const calculatePrice = () => {
+    const pages = parseInt(formData.numberOfPages) || 0;
+    
+    // Set base rate based on academic level
+    let newBaseRate = 9;
+    if (formData.academicLevel === "graduate" || formData.academicLevel === "postgraduate") {
+      newBaseRate = 20;
+    }
+    setBaseRate(newBaseRate);
+    
+    // Set urgent surcharge
+    const newUrgentSurcharge = formData.isUrgent ? 6 : 0;
+    setUrgentSurcharge(newUrgentSurcharge);
+    
+    // Calculate total price
+    const calculatedPrice = pages * (newBaseRate + newUrgentSurcharge);
+    setPrice(calculatedPrice);
+  };
+
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, type, checked, files } = e.target;
 
     if (name === "attachments" && files) {
       const newFilesArray = Array.from(files);
       setFormData((prevData) => ({
         ...prevData,
         attachments: [...prevData.attachments, ...newFilesArray],
+      }));
+    } else if (type === "checkbox") {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: checked,
       }));
     } else {
       setFormData((prevData) => ({
@@ -77,109 +110,229 @@ const PlaceNewOrder = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Order submitted:", formData);
+    console.log("Total Price:", price);
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Place New Order</h2>
-      <p className="text-gray-600 mb-8">
+    <div className="bg-white p-6 rounded-lg shadow-md max-w-6xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">Place New Order</h2>
+      <p className="text-gray-600 mb-6">
         Fill out the form below to place a new order.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Order Type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Order Type:
-          </label>
-          <select
-            name="orderType"
-            value={formData.orderType}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            required
-          >
-            <option value="" disabled>
-              Select Order Type
-            </option>
-            <option value="essay">Essay</option>
-            <option value="research-paper">Research Paper</option>
-            <option value="thesis">Thesis</option>
-            <option value="assignment">Assignment</option>
-            <option value="other">Other</option>
-          </select>
+        {/* Two Column Layout for Form Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Order Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Order Type:
+              </label>
+              <select
+                name="orderType"
+                value={formData.orderType}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              >
+                <option value="" disabled>
+                  Select Order Type
+                </option>
+                <option value="essay">Essay</option>
+                <option value="research-paper">Research Paper</option>
+                <option value="thesis">Thesis</option>
+                <option value="assignment">Assignment</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Academic Level */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Academic Level:
+              </label>
+              <select
+                name="academicLevel"
+                value={formData.academicLevel}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              >
+                <option value="" disabled>
+                  Select Academic Level
+                </option>
+                <option value="highschool">Highschool ($9/page)</option>
+                <option value="college">College ($9/page)</option>
+                <option value="graduate">Graduate ($20/page)</option>
+                <option value="postgraduate">Postgraduate ($20/page)</option>
+              </select>
+            </div>
+
+            {/* Subject */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Subject:
+              </label>
+              <input
+                type="text"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                placeholder="e.g., Computer Science, History"
+                required
+              />
+            </div>
+
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Title:
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                placeholder="Preferred topic/title"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Deadline */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Deadline:
+              </label>
+              <input
+                type="date"
+                name="deadline"
+                value={formData.deadline}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              />
+            </div>
+
+            {/* Urgent Order Section - Made more prominent */}
+            <div className={`p-4 rounded-md border ${formData.isUrgent ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'}`}>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isUrgent"
+                  checked={formData.isUrgent}
+                  onChange={handleChange}
+                  className="h-5 w-5 text-yellow-500 focus:ring-yellow-400 border-gray-300 rounded"
+                />
+                <label className="ml-3 block text-sm font-medium text-gray-700">
+                  <span className="font-bold">Urgent Order</span>
+                  <span className="text-yellow-600 font-semibold"> (+$6 per page)</span>
+                </label>
+              </div>
+              {formData.isUrgent && (
+                <p className="mt-2 text-sm text-yellow-700">
+                  Your order will be prioritized for faster completion.
+                </p>
+              )}
+            </div>
+
+            {/* Number of Pages */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number of Pages:
+              </label>
+              <input
+                type="number"
+                name="numberOfPages"
+                value={formData.numberOfPages}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                placeholder="e.g., 5 pages"
+                required
+                min="1"
+              />
+            </div>
+
+            {/* Word Count */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Word Count:
+              </label>
+              <input
+                type="number"
+                name="wordCount"
+                value={formData.wordCount}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                placeholder="e.g., 1500 words"
+                required
+                min="1"
+              />
+            </div>
+
+            {/* Paper Format */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Paper Format:
+              </label>
+              <select
+                name="paperFormat"
+                value={formData.paperFormat}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              >
+                <option value="" disabled>
+                  Select Paper Format
+                </option>
+                <option value="APA">APA</option>
+                <option value="MLA">MLA</option>
+                <option value="Chicago">Chicago</option>
+                <option value="Harvard">Harvard</option>
+                <option value="Other">Other (Indicate in the instructions)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        {/* Academic Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Academic Level:
-          </label>
-          <select
-            name="academicLevel"
-            value={formData.academicLevel}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            required
-          >
-            <option value="" disabled>
-              Select Academic Level
-            </option>
-            <option value="highschool">Highschool</option>
-            <option value="college">College</option>
-            <option value="graduate">Graduate</option>
-            <option value="postgraduate">Postgraduate</option>
-          </select>
+        {/* Prominent Price Calculator */}
+        <div className="p-4 bg-green-50 border border-green-200 rounded-md shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-green-800 mb-2">Order Summary</h3>
+              <div className="text-gray-700">
+                <p>
+                  <span className="font-medium">{formData.numberOfPages || 0} pages</span> × 
+                  <span className="font-medium"> ${baseRate} base rate</span>
+                  {urgentSurcharge > 0 && (
+                    <span className="font-medium"> + ${urgentSurcharge} urgent fee</span>
+                  )}
+                </p>
+                {formData.academicLevel && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {["graduate", "postgraduate"].includes(formData.academicLevel) 
+                      ? "Graduate/PhD level pricing" 
+                      : "Highschool/College level pricing"}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mt-4 md:mt-0">
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Total Price</p>
+                <p className="text-2xl font-bold text-green-600">${price.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Subject */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Subject:
-          </label>
-          <input
-            type="text"
-            name="subject"
-            value={formData.subject}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            placeholder="e.g., Computer Science, History"
-            required
-          />
-        </div>
-
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Title:
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            placeholder="Preferred topic/title"
-            required
-          />
-        </div>
-
-        {/* Deadline */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Deadline:
-          </label>
-          <input
-            type="date"
-            name="deadline"
-            value={formData.deadline}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            required
-          />
-        </div>
-
-        {/* Instructions */}
+        {/* Instructions (full width) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Instructions:
@@ -195,59 +348,18 @@ const PlaceNewOrder = () => {
           ></textarea>
         </div>
 
-        {/* Number of Pages */}
+        {/* Attachments (full width) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Pages:
+            Attachments:
           </label>
           <input
-            type="number"
-            name="numberOfPages"
-            value={formData.numberOfPages}
+            type="file"
+            name="attachments"
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            placeholder="e.g., 5 pages"
-            required
+            multiple
           />
-        </div>
-
-        {/* Word Count */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Word Count:
-          </label>
-          <input
-            type="number"
-            name="wordCount"
-            value={formData.wordCount}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            placeholder="e.g., 1500 words"
-            required
-          />
-        </div>
-
-        {/* Paper Format */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Paper Format:
-          </label>
-          <select
-            name="paperFormat"
-            value={formData.paperFormat}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            required
-          >
-            <option value="" disabled>
-              Select Paper Format
-            </option>
-            <option value="APA">APA</option>
-            <option value="MLA">MLA</option>
-            <option value="Chicago">Chicago</option>
-            <option value="Harvard">Harvard</option>
-            <option value="Other">Other (Indicate in the instructions)</option>
-          </select>
         </div>
 
         {/* Display selected file names with icons */}
@@ -275,27 +387,13 @@ const PlaceNewOrder = () => {
           </div>
         )}
 
-        {/* Attachments */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Attachments:
-          </label>
-          <input
-            type="file"
-            name="attachments"
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            multiple
-          />
-        </div>
-
-        {/* Submit Button */}
+        {/* Submit Button (full width) */}
         <div>
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 text-lg font-semibold shadow-md"
           >
-            Place Order
+            Place Order - ${price.toFixed(2)}
           </button>
         </div>
       </form>

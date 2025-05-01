@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaUser, FaEnvelope, FaComment, FaPaperPlane } from "react-icons/fa"; // Icons for form fields
+import { FaUser, FaEnvelope, FaComment, FaPaperPlane } from "react-icons/fa";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -20,12 +20,20 @@ const Contact = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Contact form submitted:", formData);
-    // Add logic to handle form submission (e.g., send data to an API)
+    // Add logic to handle form submission
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-600 to-blue-200 py-12">
-      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl transform transition-all hover:scale-105">
+    <div 
+      className="min-h-screen flex items-center justify-center py-12 px-4"
+      style={{
+        backgroundImage: "linear-gradient(rgba(6, 95, 70, 0.8), rgba(6, 95, 70, 0.8)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed"
+      }}
+    >
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl transform transition-all hover:scale-[1.01] backdrop-blur-sm bg-opacity-90">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Contact Us</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Field */}

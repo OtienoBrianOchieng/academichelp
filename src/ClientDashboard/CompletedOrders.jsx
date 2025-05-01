@@ -7,6 +7,7 @@ const CompletedOrders = () => {
       {
           id: "ORD12347",
           subject: "History",
+          price: "$40.00",
           completionDate: "2023-12-20",
           status: "Completed",
           rating: "5/5",
@@ -35,6 +36,9 @@ const CompletedOrders = () => {
                 Subject
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                Cost
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
                 Completion Date
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
@@ -54,6 +58,7 @@ const CompletedOrders = () => {
               >
                 <td className="px-6 py-4 text-sm text-gray-700">{order.id}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{order.subject}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">{order.price}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{order.completionDate}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">
                   <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">

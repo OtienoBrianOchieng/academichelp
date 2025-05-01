@@ -7,6 +7,7 @@ const Revisions = () => {
           {
           id: "ORD12348",
           subject: "History",
+          price: "$40.00",
           deadline: "2023-12-20",
           status: "Revision",
           instructions: "Analyze the causes of World War I.",
@@ -36,6 +37,9 @@ const Revisions = () => {
                 Subject
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                Cost
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
                 Deadline
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
@@ -55,6 +59,7 @@ const Revisions = () => {
               >
                 <td className="px-6 py-4 text-sm text-gray-700">{revision.id}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{revision.subject}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">{revision.price}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{revision.deadline}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">
                   <span

@@ -6,6 +6,7 @@ const ActiveOrders = () => {
     {
         id: "ORD12345",
         subject: "Biology",
+        price: "$40.00",
         deadline: "2023-12-15 12:47",
         status: "In Progress",
         instructions: "Write a 1500-word essay on the impact of AI on society.",
@@ -14,6 +15,7 @@ const ActiveOrders = () => {
       {
         id: "ORD12346",
         subject: "History",
+        price: "$40.00",
         deadline: "2023-12-20",
         status: "Reviewing",
         instructions: "Analyze the causes of World War I.",
@@ -22,6 +24,7 @@ const ActiveOrders = () => {
         {
           id: "ORD12348",
           subject: "History",
+          price: "$40.00",
           deadline: "2023-12-20",
           status: "Revision",
           instructions: "Analyze the causes of World War I.",
@@ -30,6 +33,7 @@ const ActiveOrders = () => {
       {
         id: "ORD12349",
         subject: "Mathematics",
+        price: "$40.00",
         deadline: "2023-12-18",
         status: "Drafting",
         instructions: "Solve the following calculus problems.",
@@ -59,13 +63,13 @@ const ActiveOrders = () => {
                 Subject
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                Cost
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
                 Deadline
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
                 Status
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
-                Actions
               </th>
             </tr>
           </thead>
@@ -76,6 +80,7 @@ const ActiveOrders = () => {
               className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 text-sm text-gray-700">{order.id}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{order.subject}</td>
+                <td className="px-6 py-4 text-sm text-gray-700">{order.price}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{order.deadline}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">
                   <span
@@ -89,14 +94,6 @@ const ActiveOrders = () => {
                   >
                     {order.status}
                   </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
-                  <button className="text-green-600 hover:text-green-700 mr-4">
-                    View
-                  </button>
-                  <button className="text-red-600 hover:text-red-700">
-                    Cancel
-                  </button>
                 </td>
               </tr>
             ))}
