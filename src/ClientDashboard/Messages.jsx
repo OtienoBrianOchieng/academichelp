@@ -1,14 +1,52 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { format, parseISO } from 'date-fns';
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import { useNavigate } from 'react-router-dom';
 
 const Messages = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [replyText, setReplyText] = useState("");
+  const messagesEndRef = useRef(null);
 
-  // Simulate API fetch
+  const selectedMessage = messages.find(msg => msg.id === selectedMessageId);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [selectedMessageId, selectedMessage?.replies]);
+
+  // Handle order navigation
+  const handleOrderClick = (orderId) => {
+    navigate(`/order/${orderId}`);
+  };
+
+  // Render message text with clickable order numbers
+  const renderMessageWithOrderLinks = (text) => {
+    const orderNumberRegex = /(#ORD\d+)/g;
+    return text.split(orderNumberRegex).map((part, index) => {
+      if (orderNumberRegex.test(part)) {
+        const orderId = part.replace('#', '');
+        return (
+          <span 
+            key={index}
+            className="text-blue-500 hover:text-blue-400 cursor-pointer underline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOrderClick(orderId);
+            }}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -18,26 +56,39 @@ const Messages = () => {
           {
             id: 1,
             sender: "Support Team",
-            subject: "Welcome to AcademicHelp!",
-            body: "Thank you for joining AcademicHelp. We're here to assist you with all your academic needs.",
+            subject: "Your Order #ORD12345",
+            orderId: "ORD12345",
+            orderStatus: "Completed",
+            body: "Your order #ORD12345 has been completed. Please review the work and let us know if you need any revisions.",
             timestamp: format(parseISO("2023-10-01T10:00:00"), "MMM d, yyyy h:mm a"),
             isRead: false,
-            replies: [],
+            replies: [
+              {
+                id: 101,
+                sender: "You",
+                body: "Thanks! I have some revision requests for order #ORD12345.",
+                timestamp: format(parseISO("2023-10-01T11:30:00"), "MMM d, yyyy h:mm a"),
+              }
+            ],
           },
           {
             id: 2,
-            sender: "Order Team",
-            subject: "Your Order #ORD12345 has been received",
-            body: "We have received your order and will begin working on it shortly.",
+            sender: "Writer",
+            subject: "Question about Order #ORD67890",
+            orderId: "ORD67890",
+            orderStatus: "In Progress",
+            body: "I have a question about your requirements for order #ORD67890. Could you clarify the formatting requirements?",
             timestamp: format(parseISO("2023-10-02T11:30:00"), "MMM d, yyyy h:mm a"),
             isRead: false,
             replies: [],
           },
           {
             id: 3,
-            sender: "Writer",
-            subject: "Question about your order",
-            body: "Could you please provide more details about the topic?",
+            sender: "Billing Team",
+            subject: "Payment Received for Order #ORD98765",
+            orderId: "ORD98765",
+            orderStatus: "Drafting",
+            body: "We've received payment for order #ORD98765. Your writer has started working on it.",
             timestamp: format(parseISO("2023-10-03T09:15:00"), "MMM d, yyyy h:mm a"),
             isRead: false,
             replies: [],
@@ -54,8 +105,6 @@ const Messages = () => {
 
     fetchMessages();
   }, []);
-
-  const selectedMessage = messages.find(msg => msg.id === selectedMessageId);
 
   const handleMessageClick = (messageId) => {
     setSelectedMessageId(messageId);
@@ -94,8 +143,8 @@ const Messages = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-pulse text-gray-600">Loading messages...</div>
+      <div className="flex justify-center items-center h-64 text-gray-600">
+        <div className="animate-pulse">Loading messages...</div>
       </div>
     );
   }
@@ -109,14 +158,14 @@ const Messages = () => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Messages</h2>
+    <div className={`flex flex-col h-[calc(100vh-2rem)] p-4 max-w-4xl mx-auto ${selectedMessage ? "bg-gray-900 text-gray-100" : "bg-white text-gray-800"}`}>
+      <h2 className={`text-2xl font-bold mb-4 px-2 ${selectedMessage ? "text-white" : "text-gray-800"}`}>Messages</h2>
 
       {selectedMessage ? (
-        <div className="space-y-4">
+        <div className="flex flex-col flex-1 overflow-hidden">
           <button
             onClick={handleBack}
-            className="flex items-center text-green-600 hover:text-green-700 transition-colors mb-4"
+            className="flex items-center text-green-400 hover:text-green-300 transition-colors mb-4 px-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -124,53 +173,100 @@ const Messages = () => {
             Back to Messages
           </button>
 
-          <div className="border border-gray-200 rounded-lg p-6 space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">{selectedMessage.subject}</h3>
-            
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
-              <p>From: <span className="font-medium">{selectedMessage.sender}</span></p>
-              <p>Date: <span className="font-medium">{selectedMessage.timestamp}</span></p>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-2">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-white break-words">
+                {selectedMessage.subject}
+              </h3>
+              {selectedMessage.orderId && (
+                <div className="flex items-center space-x-3">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    selectedMessage.orderStatus === "Completed" ? "bg-green-100 text-green-800" :
+                    selectedMessage.orderStatus === "In Progress" ? "bg-blue-100 text-blue-800" :
+                    selectedMessage.orderStatus === "Revision" ? "bg-yellow-100 text-yellow-800" :
+                    "bg-gray-100 text-gray-800"
+                  }`}>
+                    {selectedMessage.orderStatus}
+                  </span>
+                  <button
+                    onClick={() => handleOrderClick(selectedMessage.orderId)}
+                    className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm"
+                  >
+                    View Order #{selectedMessage.orderId}
+                  </button>
+                </div>
+              )}
             </div>
-
-            <p className="text-gray-700 whitespace-pre-line">{selectedMessage.body}</p>
-
-            {selectedMessage.replies.length > 0 && (
-              <div className="mt-6 space-y-4">
-                <h4 className="font-medium text-gray-800">
-                  Replies ({selectedMessage.replies.length})
-                </h4>
-                {selectedMessage.replies.map((reply) => (
-                  <div key={reply.id} className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mb-2">
-                      <p>From: <span className="font-medium">{reply.sender}</span></p>
-                      <p>Date: <span className="font-medium">{reply.timestamp}</span></p>
-                    </div>
-                    <p className="text-gray-700 whitespace-pre-line">{reply.body}</p>
+            
+            <div className="space-y-4 pb-4">
+              {/* Original Message */}
+              <div className="flex justify-start">
+                <div className="max-w-[75%] min-w-0 bg-gray-700 p-4 rounded-lg rounded-tl-none break-words overflow-hidden">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-300 mb-2">
+                    <p>{selectedMessage.sender}</p>
+                    <p>{selectedMessage.timestamp}</p>
                   </div>
-                ))}
+                  <p className="text-gray-100 whitespace-pre-wrap break-words">
+                    {renderMessageWithOrderLinks(selectedMessage.body)}
+                  </p>
+                </div>
               </div>
-            )}
 
-            <form onSubmit={handleReplySubmit} className="mt-6 space-y-4">
+              {/* Replies */}
+              {selectedMessage.replies.map((reply) => (
+                <div 
+                  key={reply.id} 
+                  className={`flex ${reply.sender === "You" ? "justify-end" : "justify-start"}`}
+                >
+                  <div className={`max-w-[75%] min-w-0 p-4 rounded-lg break-words overflow-hidden ${
+                    reply.sender === "You" 
+                      ? "bg-green-600 rounded-tr-none" 
+                      : "bg-gray-700 rounded-tl-none"
+                  }`}>
+                    <div className={`flex flex-wrap gap-x-4 gap-y-1 text-sm mb-2 ${
+                      reply.sender === "You" ? "text-green-100" : "text-gray-300"
+                    }`}>
+                      <p>{reply.sender}</p>
+                      <p>{reply.timestamp}</p>
+                    </div>
+                    <p className={`whitespace-pre-wrap break-words ${
+                      reply.sender === "You" ? "text-white" : "text-gray-100"
+                    }`}>
+                      {renderMessageWithOrderLinks(reply.body)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Reply Form */}
+          <form onSubmit={handleReplySubmit} className="mt-4 pt-4 border-t border-gray-700 px-2">
+            <div className="relative">
               <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Type your reply..."
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                rows="4"
+                placeholder="Type your message..."
+                className="w-full p-4 pr-12 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-white resize-none break-words"
+                rows={3}
               />
               <button
                 type="submit"
                 disabled={!replyText.trim()}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className={`absolute right-3 bottom-3 p-2 rounded-full transition-colors ${
+                  replyText.trim()
+                    ? "bg-green-500 hover:bg-green-400 text-white"
+                    : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                }`}
               >
-                Send Reply
+                <PaperAirplaneIcon className="h-5 w-5 transform rotate-45" />
               </button>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 px-2">
           {messages.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               You have no messages.
@@ -186,12 +282,42 @@ const Messages = () => {
                     : "bg-white border-l-4 border-l-green-500 hover:bg-gray-50"
                 }`}
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-gray-800">{message.subject}</h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                <div className="flex justify-between items-start min-w-0">
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-gray-800 truncate">
+                      {message.subject}
+                    </h3>
+                    {message.orderId && (
+                      <div className="flex items-center mt-1 space-x-2">
+                        <span 
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            message.orderStatus === "Completed" ? "bg-green-100 text-green-800" :
+                            message.orderStatus === "In Progress" ? "bg-blue-100 text-blue-800" :
+                            message.orderStatus === "Revision" ? "bg-yellow-100 text-yellow-800" :
+                            "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {message.orderStatus}
+                        </span>
+                        <span 
+                          className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOrderClick(message.orderId);
+                          }}
+                        >
+                          #{message.orderId}
+                        </span>
+                      </div>
+                    )}
+                    <p className="text-sm text-gray-600 mt-1 truncate">
                       From: <span className="font-medium">{message.sender}</span>
                     </p>
+                    {message.replies.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {message.replies.length} {message.replies.length === 1 ? 'reply' : 'replies'}
+                      </p>
+                    )}
                   </div>
                   <p className="text-sm text-gray-500 whitespace-nowrap ml-4">
                     {message.timestamp}
