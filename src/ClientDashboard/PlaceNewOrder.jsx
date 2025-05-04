@@ -37,12 +37,17 @@ const getFileIcon = (fileName) => {
 };
 
 const PlaceNewOrder = () => {
+  const [price, setPrice] = useState(0);
+  const [baseRate, setBaseRate] = useState(9);
+  const [urgentSurcharge, setUrgentSurcharge] = useState(0);
+
   const [formData, setFormData] = useState({
     orderType: "",
     subject: "",
     title: "",
     deadline: "",
     instructions: "",
+    price: "",
     academicLevel: "",
     attachments: [],
     numberOfPages: "",
@@ -51,9 +56,7 @@ const PlaceNewOrder = () => {
     isUrgent: false,
   });
 
-  const [price, setPrice] = useState(0);
-  const [baseRate, setBaseRate] = useState(9);
-  const [urgentSurcharge, setUrgentSurcharge] = useState(0);
+ 
 
   useEffect(() => {
     calculatePrice();
