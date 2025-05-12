@@ -14,7 +14,7 @@ const Header = () => {
     navigate('/login');
     
     // 3. Force reload to reset all application state
-    window.location.reload();
+    // window.location.reload();
   };
 
   return (

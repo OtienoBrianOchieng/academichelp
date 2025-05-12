@@ -78,14 +78,6 @@ const Dashboard = () => {
      </div>
 
       <div className="flex-1 p-8 bg-gradient-to-r from-green-600 to-blue-100">
-        {isWelcomeMessageVisible && (
-          <div>
-            <h1 className="text-2xl font-bold mb-4 py-8">Welcome!</h1>
-            <h1 className="text-2xl font-bold mb-4">
-              Use the dashboard to access features.
-            </h1>
-          </div>
-        )}
         <Outlet />
       </div>
     </div>

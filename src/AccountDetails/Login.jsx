@@ -64,7 +64,7 @@ const Login = () => {
       });
       // Update auth state
       setAuth(response.data.user, response.data.access_token);
-      navigate('/dashboard')
+      navigate('/dashboard/place-new-order')
 
     } catch (error) {
       let errorMessage = 'Login failed. Please try again.';

@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
     sessionStorage.removeItem('access_token');
     setUser(null);
     navigate('/login');
-    window.location.reload(); // Complete reset
+    // window.location.reload(); // Complete reset
   };
 
   const isAuthenticated = () => {
