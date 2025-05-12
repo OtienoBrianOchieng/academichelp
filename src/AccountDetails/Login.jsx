@@ -1,26 +1,29 @@
-// src/components/Login.js
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { FcGoogle } from 'react-icons/fc';
-import { FaFacebook } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
-
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [errors, setErrors] = useState({ email: '', password: '', form: '' });
+  const [formData, setFormData] = useState({ 
+    email: '', 
+    password: '' 
+  });
+  const [errors, setErrors] = useState({ 
+    email: '', 
+    password: '', 
+    form: '' 
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { setAuth } = useAuth();
   const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = { email: '', password: '' };
     let isValid = true;
 
-    if (!formData.email) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -43,14 +46,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form before submission
     if (!validate()) return;
+    
   
     setIsSubmitting(true);
     setErrors(prev => ({ ...prev, form: '' }));
   
     try {
-      // API call to your Flask backend
       const response = await axios.post('/api/auth/login', {
         email: formData.email,
         password: formData.password
@@ -58,30 +60,15 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        withCredentials: true // For cookies if using session-based auth
+        withCredentials: true
       });
-  
-      // Handle successful login
-      const { access_token, refresh_token, user } = response.data;
-      
-      // Store tokens (implementation depends on your auth strategy)
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
-      
-      // Update auth context or state
-      setAuthState({
-        isAuthenticated: true,
-        user,
-        token: access_token
-      });
-  
-      // Redirect to dashboard or intended page
-      navigate('/dashboard', { replace: true });
-  
+      // Update auth state
+      setAuth(response.data.user, response.data.access_token);
+      navigate('/dashboard')
+
     } catch (error) {
       let errorMessage = 'Login failed. Please try again.';
       
-      // Handle different error responses
       if (error.response) {
         switch (error.response.status) {
           case 400:
@@ -105,14 +92,9 @@ const Login = () => {
       }
   
       setErrors(prev => ({ ...prev, form: errorMessage }));
-      
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSocialLogin = (provider) => {
-    window.location.href = `/api/auth/${provider}`;
   };
 
   return (
@@ -174,17 +156,7 @@ const Login = () => {
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember"
-                  type="checkbox"
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-                  Remember me
-                </label>
-              </div>
+            <div className="flex justify-end">
               <Link
                 to="/forgot-password"
                 className="text-sm font-medium text-green-600 hover:text-green-500"
@@ -203,35 +175,6 @@ const Login = () => {
               {isSubmitting ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                onClick={() => handleSocialLogin('google')}
-                className="flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                <FcGoogle className="h-5 w-5" />
-                <span className="ml-2 text-sm font-medium text-gray-700">Google</span>
-              </button>
-
-              <button
-                onClick={() => handleSocialLogin('facebook')}
-                className="flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                <FaFacebook className="h-5 w-5 text-blue-600" />
-                <span className="ml-2 text-sm font-medium text-gray-700">Facebook</span>
-              </button>
-            </div>
-          </div>
 
           <div className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{' '}

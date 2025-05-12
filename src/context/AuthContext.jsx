@@ -1,58 +1,63 @@
-// src/context/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
 
+  // Initialize auth state from sessionStorage
   useEffect(() => {
-    const verifyToken = async () => {
+    const initializeAuth = () => {
       try {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-          const response = await axios.get('/api/auth/verify', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setUser(response.data.user);
+        const storedUser = sessionStorage.getItem('user');
+        const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+        
+        if (isAuthenticated && storedUser) {
+          setUser(JSON.parse(storedUser));
         }
       } catch (error) {
-        localStorage.removeItem('access_token');
+        console.error("Auth initialization error:", error);
+        clearAuth();
       } finally {
-        setLoading(false);
+        setIsInitialized(true);
       }
     };
-    verifyToken();
+
+    initializeAuth();
   }, []);
 
-  const login = async (email, password) => {
-    try {
-      const response = await axios.post('/api/auth/login', { email, password });
-      localStorage.setItem('access_token', response.data.access_token);
-      setUser(response.data.user);
-      navigate('/dashboard');
-      return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
-      };
-    }
+  const setAuth = (userData, token) => {
+    sessionStorage.setItem('isAuthenticated', 'true');
+    sessionStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.setItem('access_token', token);
+    setUser(userData);
   };
 
-  const logout = () => {
-    localStorage.removeItem('access_token');
+  const clearAuth = () => {
+    sessionStorage.removeItem('isAuthenticated');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('access_token');
     setUser(null);
     navigate('/login');
+    window.location.reload(); // Complete reset
+  };
+
+  const isAuthenticated = () => {
+    return !!user && sessionStorage.getItem('isAuthenticated') === 'true';
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ 
+      user,
+      isAuthenticated,
+      setAuth,
+      clearAuth,
+      isInitialized
+    }}>
+      {isInitialized ? children : <div>Loading...</div>}
     </AuthContext.Provider>
   );
 }

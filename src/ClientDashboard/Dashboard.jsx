@@ -75,17 +75,7 @@ const Dashboard = () => {
           ))}
         </nav>
 
-        <div className="mt-8">
-          <button
-            onClick={handleLogout}
-            className="flex items-center hover:bg-green-700 p-2 rounded transition-colors w-full"
-            aria-label={isNavbarExpanded ? "Logout" : ""}
-          >
-            <i className="fas fa-sign-out-alt text-lg mr-3" aria-hidden="true"></i>
-            {isNavbarExpanded && <span>Logout</span>}
-          </button>
-        </div>
-      </div>
+     </div>
 
       <div className="flex-1 p-8 bg-gradient-to-r from-green-600 to-blue-100">
         {isWelcomeMessageVisible && (
