@@ -17,6 +17,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const[message, setMessage] = useState('')
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -78,9 +79,7 @@ const Signup = () => {
           }
         }
       );
-
-      console.log("Signup successful:", response.data);
-      navigate("/ConfirmEmail");
+      setMessage("Check your email for verification")
     } catch (error) {
       console.error("Signup error:", error);
       setError(error.response?.data?.message || "Signup failed. Please try again.");
@@ -152,8 +151,15 @@ const Signup = () => {
               {error}
             </div>
           )}
+          {
+            message && (
+              <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-lg border border-green-200">
+              {message}
+            </div>
+            )
+          }
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {!message && <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Name */}
               <div className="relative">
@@ -331,7 +337,7 @@ const Signup = () => {
                 Log in here
               </Link>
             </div>
-          </form>
+          </form>}
         </div>
       </div>
     </div>
