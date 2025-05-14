@@ -19,6 +19,7 @@ import CompletedOrders from './ClientDashboard/CompletedOrders';
 import ActiveOrders from './ClientDashboard/ActiveOrders';
 import OrderDetails from './ClientDashboard/OrderDetails';
 import Messages from './ClientDashboard/Messages';
+import ResetPassword from './AccountDetails/ResetPassword';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -33,6 +34,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/services" element={<Services />} />
         <Route path="/forgot-password" element={<ChangePassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/verify-email" element={<ConfirmEmail />} />
 

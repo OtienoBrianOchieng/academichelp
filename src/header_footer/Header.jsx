@@ -37,7 +37,7 @@ const Header = () => {
           <Link to="/services" className="nav-link">Services</Link>
           <Link to="/contact" className="nav-link">Contact</Link>
           {isAuthenticated() && (
-            <Link to="/dashboard" className="nav-link">Profile</Link>
+            <Link to="/dashboard/place-new-order" className="nav-link">Profile</Link>
           )}
         </nav>
 
@@ -46,7 +46,7 @@ const Header = () => {
           {isAuthenticated() ? (
             <>
               <Link
-                to="/dashboard"
+                to="/dashboard/place-new-order"
                 className="flex items-center space-x-2 px-4 py-2 rounded-full font-semibold hover:bg-white/10 transition duration-300"
               >
                 <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">

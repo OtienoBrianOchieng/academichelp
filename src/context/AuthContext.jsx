@@ -33,6 +33,7 @@ export function AuthProvider({ children }) {
     sessionStorage.setItem('isAuthenticated', 'true');
     sessionStorage.setItem('user', JSON.stringify(userData));
     sessionStorage.setItem('access_token', token);
+    sessionStorage.setItem('id',userData.id)
     setUser(userData);
   };
 

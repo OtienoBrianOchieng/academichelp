@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios'
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFilePowerpoint, FaFileAlt } from "react-icons/fa";
 
 const getFileIcon = (fileName) => {
@@ -110,11 +111,94 @@ const PlaceNewOrder = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Order submitted:", formData);
-    console.log("Total Price:", price);
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Add form validation if needed
+  if (!formData.title || !formData.instructions) {
+    alert('Please fill in all required fields');
+    return;
+  }
+
+  try {
+    const id = sessionStorage.getItem('id')
+    const formDataToSend = new FormData();
+    
+    // Append all form fields
+    formDataToSend.append('orderType', formData.orderType);
+    formDataToSend.append('subject', formData.subject);
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('deadline', formData.deadline);
+    formDataToSend.append('instructions', formData.instructions);
+    formDataToSend.append('price', String(price));
+    formDataToSend.append('academicLevel', formData.academicLevel);
+    formDataToSend.append('numberOfPages', String(formData.numberOfPages));
+    formDataToSend.append('wordCount', String(formData.wordCount));
+    formDataToSend.append('paperFormat', formData.paperFormat);
+    formDataToSend.append('isUrgent', formData.isUrgent ? 'true' : 'false');
+    formDataToSend.append('id', id)
+
+    // Append files
+    formData.attachments.forEach((file) => {
+      formDataToSend.append(`attachments`, file);  // Changed to simple field name
+    });
+
+    // Get token from sessionStorage
+    const token = sessionStorage.getItem('access_token');
+    
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    console.log(formDataToSend)
+
+    const response = await axios.post('/api/orders',  // Using relative path (proxy setup recommended)
+      formDataToSend,
+      {
+        headers: {
+         'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    // Handle success
+    console.log('Order created:', response.data);
+    alert('Order submitted successfully!');
+    
+    // Reset form
+    setFormData({
+      orderType: "",
+      subject: "",
+      title: "",
+      deadline: "",
+      instructions: "",
+      price: "",
+      academicLevel: "",
+      attachments: [],
+      numberOfPages: "",
+      wordCount: "",
+      paperFormat: "",
+      isUrgent: false,
+    });
+    setPrice(0);
+
+  } catch (error) {
+    console.log('Full error object:', error);
+    console.log('Server response:', error.response?.data);
+    alert(`Error: ${error.response?.data?.message || error.message}`);
+    console.error('Submission error:', error);
+    
+    let errorMessage = 'Failed to submit order';
+    if (error.response) {
+      errorMessage = error.response.data.message || 
+                   `Server error: ${error.response.status}`;
+    } else if (error.request) {
+      errorMessage = 'No response from server';
+    }
+    
+    alert(errorMessage);
+  }
+};
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md max-w-6xl mx-auto">
