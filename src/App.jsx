@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from './context/AuthContext';
+import { OrderProvider } from './context/OrderContext';
 import ProtectedRoute from './components/ProtectedRoute'; // Fixed import
 import Home from './Home';
 import Header from './header_footer/Header';
@@ -25,6 +26,7 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
+    <OrderProvider>
     <AuthProvider>
       <Header />
       <Routes>
@@ -65,6 +67,7 @@ function App() {
       </Routes>
       <Footer />
     </AuthProvider>
+    </OrderProvider>
   );
 }
 
