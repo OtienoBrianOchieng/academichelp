@@ -4,6 +4,8 @@ import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFilePowerpoint, FaFi
 
 const getFileIcon = (fileName) => {
   const extension = fileName.split('.').pop().toLowerCase();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   switch (extension) {
     case 'pdf':
@@ -119,6 +121,7 @@ const handleSubmit = async (e) => {
     alert('Please fill in all required fields');
     return;
   }
+  setIsSubmitting(true);
 
   try {
     const id = sessionStorage.getItem('id')
@@ -162,8 +165,7 @@ const handleSubmit = async (e) => {
     );
 
     // Handle success
-    console.log('Order created:', response.data);
-    alert('Order submitted successfully!');
+    setIsSubmitting(false);
     
     // Reset form
     setFormData({
@@ -476,12 +478,24 @@ const handleSubmit = async (e) => {
 
         {/* Submit Button (full width) */}
         <div>
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 text-lg font-semibold shadow-md"
-          >
-            Place Order - ${price.toFixed(2)}
-          </button>
+    <button
+      onClick={handleSubmit}
+      disabled={isSubmitting}
+      className={`w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 text-lg font-semibold shadow-md transition-all ${
+        isSubmitting ? 'opacity-80' : ''
+      }`}
+    >
+      {isSubmitting ? (
+        <span className="flex items-center justify-center">
+          <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+            {/* Spinner icon */}
+          </svg>
+          Processing...
+        </span>
+      ) : (
+        `Place Order - $${price.toFixed(2)}`
+      )}
+    </button>
         </div>
       </form>
     </div>
