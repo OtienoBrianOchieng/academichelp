@@ -4,7 +4,7 @@ import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFilePowerpoint, FaFi
 
 const getFileIcon = (fileName) => {
   const extension = fileName.split('.').pop().toLowerCase();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
 
 
   switch (extension) {
@@ -43,6 +43,7 @@ const PlaceNewOrder = () => {
   const [price, setPrice] = useState(0);
   const [baseRate, setBaseRate] = useState(9);
   const [urgentSurcharge, setUrgentSurcharge] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     orderType: "",
