@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import axios from 'axios'
 import { useParams, useNavigate } from "react-router-dom";
 import {
+   FaFile,
   FaFilePdf,
   FaFileImage,
   FaFileWord,
@@ -21,6 +23,8 @@ import {
 
 const OrderDetails = () => {
   const { orderId } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [order, setOrder] = useState(null);
   const [newFiles, setNewFiles] = useState([]);
   const [revisionMessage, setRevisionMessage] = useState("");
@@ -37,6 +41,7 @@ const OrderDetails = () => {
   const [hasRated, setHasRated] = useState(false);
   const [showRatingPrompt, setShowRatingPrompt] = useState(false);
   const navigate = useNavigate();
+  const [fetchedOrder, setFetchedOrder] = useState([])
 
   const handleRevise = () => {
     navigate(-1);
@@ -44,80 +49,32 @@ const OrderDetails = () => {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      // Mock data with file URLs
-      const orders = [
-        {
-          id: "ORD12345",
-          subject: "Biology",
-          price: "$40.00",
-          deadline: "2023-12-15 12:47",
-          status: "Completed",
-          instructions: "Write a 1500-word essay on the impact of AI on society.",
-          attachments: [
-            { name: "document1.pdf", url: "https://example.com/files/document1.pdf" },
-            { name: "image1.png", url: "https://example.com/files/image1.png" },
-          ],
-          rating: null,
-          completedAt: new Date().toISOString(),
-        },
-        {
-          id: "ORD12346",
-          subject: "History",
-          price: "$40.00",
-          deadline: "2023-12-20",
-          status: "Reviewing",
-          instructions: "Analyze the causes of World War I.",
-          attachments: [
-            { name: "notes.docx", url: "https://example.com/files/notes.docx" },
-          ],
-          rating: null,
-        },
-        {
-          id: "ORD12347",
-          subject: "History",
-          price: "$40.00",
-          deadline: "2023-12-20",
-          status: "Completed",
-          instructions: "Analyze the causes of World War I.",
-          attachments: [
-            { name: "final_paper.docx", url: "https://example.com/files/final_paper.docx" },
-          ],
-          rating: null,
-          completedAt: "2023-12-19T14:30:00Z",
-        },
-        {
-          id: "ORD12348",
-          subject: "History",
-          price: "$40.00",
-          deadline: "2023-12-20",
-          status: "Revision",
-          instructions: "Analyze the causes of World War I.",
-          attachments: [
-            { name: "revised_notes.docx", url: "https://example.com/files/revised_notes.docx" },
-          ],
-          rating: null,
-        },
-        {
-          id: "ORD12349",
-          subject: "Mathematics",
-          price: "$40.00",
-          deadline: "2023-12-18",
-          status: "Drafting",
-          instructions: "Solve the following calculus problems.",
-          attachments: [
-            { name: "problems.pdf", url: "https://example.com/files/problems.pdf" },
-          ],
-          rating: null,
-        },
-      ];
+      console.log("working")
+        const user_id = sessionStorage.getItem("id")
+        console.log(user_id)
+        console.log(orderId)
 
-      const foundOrder = orders.find((o) => o.id === orderId);
-      setOrder(foundOrder);
-      
-      if (foundOrder?.rating) {
+        try {
+          setLoading(true);
+          const fetchedOrder = await axios.get(`/api/orders/${user_id}/${orderId}`); // Send as payload
+          console.log(fetchedOrder)
+          setFetchedOrder(fetchedOrder.data);
+          setError(null);
+
+        }
+        catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch the order');
+        console.error("Error:", err.response?.data); // Debugging
+        } finally {
+        setLoading(false);
+        }
+        };
+
+    
+      if (fetchedOrder?.rating) {
         setHasRated(true);
-        setRating(foundOrder.rating);
-      } else if (foundOrder?.status === "Completed") {
+        setRating(fetchedOrder.rating);
+      } else if (fetchedOrder?.status === "Completed") {
         // Check if they previously clicked "Maybe Later"
         const remindRate = localStorage.getItem(`remindRate_${orderId}`);
         if (!remindRate) {
@@ -127,7 +84,6 @@ const OrderDetails = () => {
           }, 2000);
         }
       }
-    };
 
     fetchOrderDetails();
   }, [orderId]);
@@ -141,29 +97,7 @@ const OrderDetails = () => {
     document.body.removeChild(link);
   };
 
-  const getAttachmentIcon = (fileName) => {
-    const extension = fileName.split(".").pop().toLowerCase();
-    switch (extension) {
-      case "pdf":
-        return <FaFilePdf className="text-red-600 mr-2" />;
-      case "docx":
-      case "doc":
-        return <FaFileWord className="text-blue-600 mr-2" />;
-      case "xlsx":
-      case "xls":
-        return <FaFileExcel className="text-green-600 mr-2" />;
-      case "pptx":
-      case "ppt":
-        return <FaFilePowerpoint className="text-orange-600 mr-2" />;
-      case "jpg":
-      case "jpeg":
-      case "png":
-      case "gif":
-        return <FaFileImage className="text-yellow-500 mr-2" />;
-      default:
-        return <FaFileAlt className="text-gray-500 mr-2" />;
-    }
-  };
+  
 
   const handleFileChange = (e, section) => {
     const files = Array.from(e.target.files);
@@ -216,7 +150,7 @@ const OrderDetails = () => {
   };
 
   const handlePlaceOnRevision = () => {
-    setOrder({ ...order, status: "Revision" });
+    setOrder({ ...fetchedOrder, status: "Revision" });
     setIsRevisionVisible(true);
   };
 
@@ -240,7 +174,7 @@ const OrderDetails = () => {
       setIsRevisionVisible(false);
       setIsUploading(false);
       
-      setOrder({ ...order, status: "Revision" });
+      setOrder({ ...fetchedOrder, status: "Revision" });
       
     } catch (error) {
       console.error("Error submitting revision:", error);
@@ -315,16 +249,14 @@ const OrderDetails = () => {
     console.log("Rating submitted:", rating);
     console.log("Feedback:", feedback);
     
-    // In a real app:
-    // await api.submitRating(order.id, rating, feedback);
-    
+   
     setHasRated(true);
     setShowRatingModal(false);
     setShowRatingPrompt(false);
     setFeedback("");
     
     // Update order with rating
-    setOrder({ ...order, rating });
+    setOrder({ ...fetchedOrder, rating });
     
     alert(`Thank you for your ${rating} star${rating !== 1 ? 's' : ''}!`);
   };
@@ -334,10 +266,94 @@ const OrderDetails = () => {
     localStorage.setItem(`remindRate_${orderId}`, new Date().toISOString());
   };
 
-  if (!order) {
+  if (!fetchedOrder) {
     return <div className="p-8 text-gray-600">Loading order details...</div>;
   }
 
+    const getFileIcon = (mimetypeOrFilename) => {
+      // Handle cases where input might be undefined/null
+      if (!mimetypeOrFilename) return <FaFileAlt className="text-gray-500 mr-2" />;
+
+      // Try to get extension from filename first
+      let extension = "";
+      
+      // Check if it's a mimetype (like "application/pdf")
+      if (mimetypeOrFilename.includes('/')) {
+        extension = mimetypeOrFilename.split('/')[1]; // Get "pdf" from "application/pdf"
+      } else {
+        // Otherwise treat as filename
+        const parts = mimetypeOrFilename.split('.');
+        extension = parts.length > 1 ? parts.pop().toLowerCase() : "";
+      }
+
+      console.log("Determined extension:", extension); // Debug log
+
+      switch(extension) {
+        case 'pdf':
+          return <FaFilePdf className="text-red-500 mr-2" />;
+        case 'doc':
+        case 'docx':
+        case 'msword':
+        case 'vnd.openxmlformats-officedocument.wordprocessingml.document':
+          return <FaFileWord className="text-blue-500 mr-2" />;
+        case 'xls':
+        case 'xlsx':
+        case 'vnd.ms-excel':
+        case 'vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+          return <FaFileExcel className="text-green-500 mr-2" />;
+        case 'ppt':
+        case 'pptx':
+          return <FaFilePowerpoint className="text-orange-500 mr-2" />;
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif':
+        case 'svg':
+          return <FaFileImage className="text-yellow-500 mr-2" />;
+        default:
+          return <FaFileAlt className="text-gray-500 mr-2" />;
+      }
+    }
+
+  const formatFileSize = (bytes) => {
+    console.log(bytes)
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+const calculateDaysLeft = (deadline) => {
+  // First check if deadline exists and is a valid string
+  if (!deadline || typeof deadline !== 'string') return 'No deadline';
+  
+  try {
+    const deadlineDate = new Date(deadline);
+    // Check if the date is invalid
+    if (isNaN(deadlineDate.getTime())) return 'Invalid deadline';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to midnight
+    
+    // Some APIs return dates with timezone info that needs adjustment
+    const normalizedDeadline = new Date(deadlineDate.toISOString().split('T')[0]);
+    
+    const timeDiff = normalizedDeadline - today;
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    
+    if (daysLeft < 0) return 'Deadline passed';
+    if (daysLeft === 0) return 'Due today';
+    if (daysLeft === 1) return '1 day left';
+    return `${daysLeft} days left`;
+  } catch (error) {
+    console.error('Date calculation error:', error);
+    return 'Invalid date';
+  }
+};
+
+
+  
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8">
       <div className="bg-white rounded-xl shadow-lg max-w-6xl mx-auto overflow-hidden">
@@ -351,7 +367,7 @@ const OrderDetails = () => {
               <FaArrowLeft className="mr-2" />
               Back to Dashboard
             </button>
-            <h1 className="text-2xl md:text-3xl font-bold">Order No: {order.id}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">Order No: {fetchedOrder.id}</h1>
             <div className="w-24"></div>
           </div>
         </div>
@@ -365,49 +381,66 @@ const OrderDetails = () => {
               
               <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                 <span className="text-gray-600">Subject:</span>
-                <span className="font-semibold">{order.subject}</span>
+                <span className="font-semibold">{fetchedOrder.subject}</span>
               </div>
               
               <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                 <span className="text-gray-600">Cost:</span>
-                <span className="font-semibold text-green-600">{order.price}</span>
+                <span className="font-semibold text-green-600">${fetchedOrder.price}</span>
               </div>
               
               <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                 <span className="text-gray-600">Deadline:</span>
-                <span className="font-semibold">{order.deadline}</span>
+                <div className="flex flex-col items-end">
+                  {fetchedOrder.deadline ? (
+                    <>
+                      <span className="font-semibold">
+                        {new Date(fetchedOrder.deadline).toISOString().split('T')[0]}
+                      </span>
+                      <span className={`text-sm ${
+                        calculateDaysLeft(fetchedOrder.deadline).includes('passed') ? 'text-red-500' : 
+                        calculateDaysLeft(fetchedOrder.deadline).includes('today') ? 'text-orange-500' : 
+                        'text-green-500'
+                      }`}>
+                        {calculateDaysLeft(fetchedOrder.deadline)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-gray-500">No deadline set</span>
+                  )}
+                </div>
               </div>
               
               <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                 <span className="text-gray-600">Status:</span>
-                {getStatusBadge(order.status)}
+                {getStatusBadge(fetchedOrder.status)}
               </div>
 
               <div className="space-y-2">
               <h3 className="text-lg font-semibold text-gray-800">Instructions</h3>
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-gray-700">{order.instructions}</p>
+                <p className="text-gray-700">{fetchedOrder.instructions}</p>
               </div>
             </div>
 
               {/* Rating Section */}
-              {order.status === "Completed" && (
+              {fetchedOrder.status === "Completed" && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    {hasRated || order.rating ? "Your Rating" : "Rate This Order"}
+                    {hasRated || fetchedOrder.rating ? "Your Rating" : "Rate This Order"}
                   </h3>
-                  {hasRated || order.rating ? (
+                  {hasRated || fetchedOrder.rating ? (
                     <div className="flex items-center">
                       <div className="flex text-yellow-400">
                         {[...Array(5)].map((_, i) => (
                           <FaStar
                             key={i}
-                            className={i < (order.rating || rating) ? "text-yellow-400" : "text-gray-300"}
+                            className={i < (fetchedOrder.rating || rating) ? "text-yellow-400" : "text-gray-300"}
                           />
                         ))}
                       </div>
                       <span className="ml-2 text-gray-600">
-                        {order.rating ? `You rated this ${order.rating} star${order.rating !== 1 ? 's' : ''}` : "Thank you for your rating!"}
+                        {fetchedOrder.rating ? `You rated this ${fetchedOrder.rating} star${fetchedOrder.rating !== 1 ? 's' : ''}` : "Thank you for your rating!"}
                       </span>
                     </div>
                   ) : (
@@ -425,9 +458,9 @@ const OrderDetails = () => {
 
 
             {/* Action Buttons */}
-            {order.status !== "Completed" && (
+            {fetchedOrder.status !== "Completed" && (
               <div className="flex flex-wrap gap-3 pt-4">
-                {!isRevisionVisible && order.status !== "Revision" && (
+                {!isRevisionVisible && fetchedOrder.status !== "Revision" && (
                   <button
                     onClick={handlePlaceOnRevision}
                     className="flex items-center bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors"
@@ -451,50 +484,56 @@ const OrderDetails = () => {
           {/* Files and Communication Column */}
           <div className="space-y-6">
             {/* Files Section */}
+
+              
             <div className="space-y-4">
               <h2 className="text-xl font-bold text-gray-800">Files</h2>
               
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="flex items-center text-lg font-semibold text-gray-700 mb-3">
-                  <FaPaperclip className="mr-2 text-green-600" />
-                  Client Uploaded Files
-                </h3>
-                {order.attachments.length === 0 ? (
-                  <p className="text-gray-500 italic">No attachments provided</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {order.attachments.map((file, index) => (
-                      <li 
-                        key={index} 
-                        className="flex items-center justify-between group hover:bg-gray-100 p-2 rounded transition-colors"
-                      >
-                        <div className="flex items-center">
-                          {getAttachmentIcon(file.name)} 
-                          <span className="ml-2 hover:text-green-600 transition-colors">
-                            {file.name}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleDownload(file.url, file.name)}
-                          className="text-gray-400 hover:text-green-600 transition-colors p-1"
-                          title="Download file"
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="flex items-center text-lg font-semibold text-gray-700 mb-3">
+                    <FaPaperclip className="mr-2 text-green-600" />
+                    Client Uploaded Files
+                  </h3>
+                  {Array.isArray(fetchedOrder?.files) && fetchedOrder.files.length > 0 ? (
+                    <ul className="space-y-2">
+                      {fetchedOrder.files.map((file) => (
+                        <li 
+                          key={file.id}
+                          className="flex items-center justify-between group hover:bg-gray-100 p-2 rounded transition-colors"
                         >
-                          <FaDownload />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                          <div className="flex items-center min-w-0">
+                            {getFileIcon(file.mimetype || file.filename)}
+                            <span className="ml-2 hover:text-green-600 transition-colors truncate">
+                              {file.filename.replace(/_/g, ' ')}
+                            </span>
+                            <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
+                              ({formatFileSize(file.size)})
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => handleDownload(file.download_url, file.filename)}
+                            className="text-gray-400 hover:text-green-600 transition-colors p-1 flex-shrink-0"
+                            title="Download file"
+                            aria-label={`Download ${file.filename}`}
+                          >
+                            <FaDownload />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500 italic">No files attached</p>
+                  )}
+                </div>
 
-              {(order.status === "Revision" || order.status === "Completed") && (
+              {(fetchedOrder.status === "Revision" || fetchedOrder.status === "Completed") && (
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="flex items-center text-lg font-semibold text-gray-700 mb-3">
                     <FaPaperclip className="mr-2 text-blue-600" />
                     Writer Uploaded Files
                   </h3>
                   <ul className="space-y-2">
-                    {order.attachments.map((file, index) => (
+                    {fetchedOrder.files.map((file, index) => (
                       <li 
                         key={index} 
                         className="flex items-center justify-between group hover:bg-gray-100 p-2 rounded transition-colors"
@@ -623,7 +662,7 @@ const OrderDetails = () => {
             )}
 
             {/* Communication Section */}
-            {order.status !== "Completed" && !isRevisionVisible && (
+            {fetchedOrder.status !== "Completed" && !isRevisionVisible && (
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h3 className="flex items-center text-lg font-semibold text-gray-700 mb-3">
                   <FaCommentAlt className="mr-2 text-blue-600" />

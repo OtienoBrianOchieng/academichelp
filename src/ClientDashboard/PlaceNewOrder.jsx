@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios'
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFilePowerpoint, FaFileAlt } from "react-icons/fa";
+import { useOrders } from '../context/OrderContext';
 
 const getFileIcon = (fileName) => {
   const extension = fileName.split('.').pop().toLowerCase();
+  
   
 
 
@@ -44,6 +46,7 @@ const PlaceNewOrder = () => {
   const [baseRate, setBaseRate] = useState(9);
   const [urgentSurcharge, setUrgentSurcharge] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {fetchOrders} =  useOrders()
 
   const [formData, setFormData] = useState({
     orderType: "",
@@ -167,7 +170,8 @@ const handleSubmit = async (e) => {
 
     // Handle success
     setIsSubmitting(false);
-    
+  
+    fetchOrders()
     // Reset form
     setFormData({
       orderType: "",

@@ -15,7 +15,8 @@ export const OrderProvider = ({ children }) => {
     try {
         setLoading(true);
         const response = await axios.get(`/api/orders/${ user_id }`); // Send as payload
-        setOrders(response.data);
+        const reversedData = response.data.reverse()
+        setOrders(reversedData);
         setError(null);
     } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch orders');
@@ -41,7 +42,7 @@ export const OrderProvider = ({ children }) => {
   }, []);
 
   return (
-    <OrderContext.Provider value={{ orders, loading, error, updateOrderStatus }}>
+    <OrderContext.Provider value={{ orders, loading, error, updateOrderStatus, fetchOrders }}>
       {children}
     </OrderContext.Provider>
   );

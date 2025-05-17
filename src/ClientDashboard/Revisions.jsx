@@ -28,7 +28,7 @@ const Revisions = () => {
 
     if (loading) return <div className="p-8 text-center">Loading revisions...</div>;
     if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
-    if (revisions.length === 0) return <div className="p-8 text-center">No orders currently in revision</div>;
+    if (revisions.length === 0) return <div className="p-8 text-center">Great! No orders are on revision</div>;
 
     return (
         <div className="bg-white p-8 rounded-lg shadow-md">
