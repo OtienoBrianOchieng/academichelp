@@ -20,6 +20,7 @@ import {
   FaSpinner,
   FaStar,
 } from "react-icons/fa";
+import { useOrders } from '../context/OrderContext';
 
 const OrderDetails = () => {
   const { orderId } = useParams();
@@ -42,6 +43,13 @@ const OrderDetails = () => {
   const [showRatingPrompt, setShowRatingPrompt] = useState(false);
   const navigate = useNavigate();
   const [fetchedOrder, setFetchedOrder] = useState([])
+  const user_id = sessionStorage.getItem("id")
+  const [isCancelling, setIsCancelling] = useState(false);
+  const {fetchOrders} = useOrders()
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
 
   const handleRevise = () => {
     navigate(-1);
@@ -50,7 +58,7 @@ const OrderDetails = () => {
   useEffect(() => {
     const fetchOrderDetails = async () => {
       console.log("working")
-        const user_id = sessionStorage.getItem("id")
+        
         console.log(user_id)
         console.log(orderId)
 
@@ -154,31 +162,46 @@ const OrderDetails = () => {
     setIsRevisionVisible(true);
   };
 
+// revision post
   const handleSubmitRevision = async (e) => {
     e.preventDefault();
-    
+    setIsSubmitting(true);
+    setError(null);
+    setSuccess(false);
+        
     if (revisionMessage.trim() === "" && newFiles.length === 0) {
       alert("Please provide a revision message or upload files");
       return;
     }
-    
+
     try {
-      setIsUploading(true);
-      const uploadedFiles = await uploadFiles(newFiles);
+      const formData = new FormData();
       
-      console.log("Submitted revision with message:", revisionMessage);
-      console.log("Uploaded files:", uploadedFiles);
+      // Add files to FormData
+      newFiles.forEach(file => {
+        formData.append('files', file);
+      });
       
-      setRevisionMessage("");
-      setNewFiles([]);
-      setIsRevisionVisible(false);
-      setIsUploading(false);
-      
-      setOrder({ ...fetchedOrder, status: "Revision" });
-      
-    } catch (error) {
-      console.error("Error submitting revision:", error);
-      setIsUploading(false);
+      // Add other data
+      formData.append('orderId', orderId);
+      formData.append('userId', user_id);
+      formData.append('message', revisionMessage);
+      formData.append('status', 'revision');
+
+      const response = await axios.post('/api/orders/revision', formData);
+
+      if (response.status === 200) {
+        setSuccess(true);
+        setNewFiles([]);
+        setMessage('');
+        fetchOrders()
+        // You might want to refresh order data here or redirect
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to submit revision');
+      console.error('Revision submission error:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -212,10 +235,28 @@ const OrderDetails = () => {
     setShowCancelModal(true);
   };
 
-  const confirmCancelOrder = () => {
-    console.log("Order cancelled");
-    setShowCancelModal(false);
-    navigate(-1);
+
+  const confirmCancelOrder = async () => {
+    setIsCancelling(true);
+    setError(null);
+    
+    try {
+      // Make DELETE request to your Flask API
+      const response = await axios.delete(`/api/orders/${orderId}/${user_id}`);
+
+      if (response.status === 200) {
+        console.log("Order cancelled successfully");
+        fetchOrders()
+        // You might want to add a success notification here
+        navigate(-1); // Or navigate to orders list: navigate('/orders');
+      }
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      setError(err.response?.data?.message || 'Failed to cancel order');
+    } finally {
+      setIsCancelling(false);
+      setShowCancelModal(false);
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -460,7 +501,7 @@ const calculateDaysLeft = (deadline) => {
             {/* Action Buttons */}
             {fetchedOrder.status !== "Completed" && (
               <div className="flex flex-wrap gap-3 pt-4">
-                {!isRevisionVisible && fetchedOrder.status !== "Revision" && (
+                {!isRevisionVisible && fetchedOrder.status === "completed" && (
                   <button
                     onClick={handlePlaceOnRevision}
                     className="flex items-center bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors"
@@ -893,24 +934,29 @@ const calculateDaysLeft = (deadline) => {
 
       {/* Cancel Order Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Order Cancellation</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to cancel this order? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Confirm Cancellation</h3>
+            <p className="mb-4">Are you sure you want to cancel this order?</p>
+            
+            {error && (
+              <div className="text-red-500 mb-4">{error}</div>
+            )}
+
+            <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowCancelModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 border rounded"
+                disabled={isCancelling}
               >
-                Go Back
+                No, Keep Order
               </button>
               <button
                 onClick={confirmCancelOrder}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                disabled={isCancelling}
               >
-                Confirm Cancellation
+                {isCancelling ? 'Cancelling...' : 'Yes, Cancel Order'}
               </button>
             </div>
           </div>
